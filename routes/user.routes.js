@@ -24,10 +24,6 @@ router.post('/register',
             })
         }
         const { email , username , password }=req.body
-        console.log(username)
-        console.log(password)
-        console.log(email)
-
 
         const hashPassword = await bcrypt.hash(password, 10)
         
@@ -90,12 +86,15 @@ router.post('/login',
             username: user.username,
             email: user.email,
             userId: user._id
-        }, 'process.env.JWT_SECRET');
+        }, process.env.JWT_SECRET , { expiresIn: '1h' });
 
+        res.cookie('token', token, {
+            httpOnly: true,   // Can't be accessed via JavaScript (XSS protection)
+            secure: process.env.NODE_ENV === 'production', // Ensure secure cookie in production (HTTPS)
+            sameSite: 'Strict' // Prevent CSRF attacks
+        });
 
-        res.cookie('cookie', token);
-        res.send("logged in");
-
+        return res.json({ message: 'Logged in successfully' });
 
 })
 
